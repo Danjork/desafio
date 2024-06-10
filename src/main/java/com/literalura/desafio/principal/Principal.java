@@ -6,8 +6,10 @@ import com.literalura.desafio.service.ConsumoAPI;
 import com.literalura.desafio.service.ConvierteDatos;
 
 import java.util.Comparator;
+import java.util.DoubleSummaryStatistics;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Principal {
 
@@ -35,16 +37,24 @@ public class Principal {
         System.out.println("Ingresa tu libro favorito");
 
         var tituloLibro = teclado.nextLine();
-        json = consumoAPI.obtenerDatos(URL_BASE + "?search" + tituloLibro.replace(" " , "+"));
+        json = consumoAPI.obtenerDatos(URL_BASE + "?search=" + tituloLibro.replace(" " , "+"));
         var datosBusqueda = conversor.obtenerDatos(json, Datos.class);
         Optional<DatosLibros> libroBuscado = datosBusqueda.resultados().stream()
                 .filter(l -> l.titulo().toUpperCase().contains(tituloLibro.toUpperCase()))
                 .findFirst();
         if (libroBuscado.isPresent()){
-            System.out.println("Libro encontrado");
+            System.out.println("Libro encontrado ");
             System.out.println(libroBuscado.get());
         }else {
             System.out.println("libro no encontrado");
         }
+
+        DoubleSummaryStatistics est = datos.resultados().stream()
+                .filter(d -> d.numeroDeDescargas() > 0)
+                .collect(Collectors.summarizingDouble(DatosLibros::numeroDeDescargas));
+        System.out.println("cantiadad descargada " + est.getAverage());
+        System.out.println(" maximo descargas " + est.getMax());
+        System.out.println("minimo descargas " +  est.getMin());
+        System.out.println("cantidad registros " + est.getCount());
     }
 }
